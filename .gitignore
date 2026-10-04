@@ -1,0 +1,22 @@
+# Android / Gradle build output and caches
+.gradle/
+.kotlin/
+**/build/
+.externalNativeBuild/
+.cxx/
+captures/
+*.apk
+*.aab
+
+# Local SDK configuration and IDE files
+local.properties
+.idea/
+*.iml
+
+# OS and temporary files
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.temp
+*~
