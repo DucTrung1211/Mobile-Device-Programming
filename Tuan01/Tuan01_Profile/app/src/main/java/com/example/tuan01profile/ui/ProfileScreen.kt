@@ -91,7 +91,6 @@ fun ProfileScreen(onBackClick: () -> Unit = {}) {
                     painter = painterResource(R.drawable.avatar_tran_duc_trung_cutout),
                     contentDescription = "Ảnh đại diện $STUDENT_NAME",
                     contentScale = ContentScale.Crop,
-                    // Ảnh đã tách nền; giữ tóc và cằm trong khung tròn.
                     alignment = BiasAlignment(0f, -0.75f),
                     modifier = Modifier.fillMaxSize()
                 )
