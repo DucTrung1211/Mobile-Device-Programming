@@ -1,0 +1,16 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="151dp"
+    android:height="151dp"
+    android:viewportWidth="151"
+    android:viewportHeight="151">
+    <!-- Placeholder không có khuôn mặt; thay bằng asset avatar gốc từ Figma. -->
+    <path
+        android:fillColor="#EF343B"
+        android:pathData="M75.5,0 A75.5,75.5 0,1 1,75.5 151 A75.5,75.5 0,1 1,75.5 0" />
+    <path
+        android:fillColor="#4B61A6"
+        android:pathData="M20,151 L20,135 C20,108 44,94 75.5,94 C107,94 131,108 131,135 L131,151 Z" />
+    <path
+        android:fillColor="#F5F5F5"
+        android:pathData="M75.5,28 A27,27 0,1 1,75.5 82 A27,27 0,1 1,75.5 28" />
+</vector>

@@ -19,3 +19,4 @@ Lập trình Thiết bị Di động.
 | Tuần | Nội dung | Project |
 |------|----------|---------|
 | Tuần 01 | Profile UI và bài tập tìm hiểu | [Xem bài Tuần 01](./Tuan01) |
+| Tuần 02 | State, Nullable, For và If/Else | [Xem bài Tuần 02](./Tuan02) |
