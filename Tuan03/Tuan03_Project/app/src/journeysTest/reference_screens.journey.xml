@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<journey name="Reference screens and old coursework">
+    <description>Start from the coursework menu. Check reference UI, live input, password, back navigation and the preserved old exercise.</description>
+    <actions xml:space="preserve">
+        <action>Tap 'Tuần 04 · Bài 01 — UI Components'</action>
+        <action>Verify 'Jetpack Compose' and "I'm ready" are visible with a Compose logo</action>
+        <action>Tap "I'm ready"</action>
+        <action>Verify the title 'UI Components List' and the first six items Text, Image, TextField, PasswordField, Column, Row</action>
+        <action>Tap the Text item</action>
+        <action>Verify 'Text Detail' with quick struck through, Brown in brown, over bold and the underlined</action>
+        <action>Tap the 'Quay lại' back button</action>
+        <action>Verify 'UI Components List'</action>
+        <action>Tap the Image item</action>
+        <action>Verify 'Images', two campus images and the caption 'In app'</action>
+        <action>Press Android Back once</action>
+        <action>Verify 'UI Components List'</action>
+        <action>Tap the TextField item</action>
+        <action>Enter 'Xin chao' into the input with placeholder 'Thông tin nhập'</action>
+        <action>Verify 'Xin chao' is shown below the input in red</action>
+        <action>Hide the keyboard if it is open</action>
+        <action>Tap the 'Quay lại' back button</action>
+        <action>Tap the PasswordField item</action>
+        <action>Enter 'Compose123' into the password input</action>
+        <action>Verify the input masks the password</action>
+        <action>Tap 'Hiện'</action>
+        <action>Verify the password 'Compose123' is visible</action>
+        <action>Hide the keyboard if it is open</action>
+        <action>Tap the 'Quay lại' back button</action>
+        <action>Tap the Row item</action>
+        <action>Verify 'Row Layout' and four rows each containing three blue rounded rectangles</action>
+        <action>Tap the 'Quay lại' back button</action>
+        <action>Tap the Column item</action>
+        <action>Verify 'Column Layout' and three vertically arranged blue rectangles</action>
+        <action>Tap the 'Quay lại' back button</action>
+        <action>Tap the Box item</action>
+        <action>Verify 'Box Layout' and three overlapping orange rectangles</action>
+        <action>Tap the 'Quay lại' back button</action>
+        <action>Press Android Back once to show the intro</action>
+        <action>Press Android Back once to show the coursework menu</action>
+        <action>Tap 'Tuần 03 — My First App'</action>
+        <action>Verify 'My First App', 'Hello' and 'Say Hi!'</action>
+        <action>Tap 'Say Hi!'</action>
+        <action>Verify "I'm" and 'Nguyen Van A'</action>
+        <action>Press Android Back to return to the coursework menu</action>
+    </actions>
+</journey>

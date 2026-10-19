@@ -1,0 +1,9 @@
+<resources>
+    <style name="Theme.Tuan03_Project" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowBackground">#FFFFFF</item>
+        <item name="android:colorAccent">#0068BE</item>
+    </style>
+</resources>
