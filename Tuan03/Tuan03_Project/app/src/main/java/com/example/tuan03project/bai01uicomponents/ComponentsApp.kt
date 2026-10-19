@@ -28,7 +28,7 @@ fun ComponentsApp(onExit: () -> Unit) {
         }
     }
     BackHandler { quayLai() }
-    // Chỉ áp dụng bảng màu này cho bài mới.
+
     MaterialTheme(colorScheme = lightColorScheme(
         primary = ButtonBlue, background = Color.White, surface = Color.White,
         onBackground = Color.Black, onSurface = Color.Black

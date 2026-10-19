@@ -17,11 +17,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tuan02project.ui.theme.Tuan02_ProjectTheme
 
-// 0 = Thực hành 02
-// 1 = Thực hành 03
-// 2 = Bài 1 - Nullable
-// 3 = Bài 2 - If / Else
-// 4 = Bài 3 - For + If + Nullable
 private const val START_SCREEN = 1
 
 class MainActivity : ComponentActivity() {

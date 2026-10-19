@@ -17,7 +17,7 @@ import com.example.tuan03project.bai01uicomponents.components
 
 @Composable
 fun TextFieldExample() {
-    // value đọc state; onValueChange ghi lại nội dung vừa gõ.
+
     var noiDungNhap by rememberSaveable { mutableStateOf("") }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         OutlinedTextField(

@@ -33,7 +33,6 @@ fun Bai3ForIfNullableScreen() {
     var missingScoreCount = 0
     var highestScore = 0.0
 
-    // Chỉ cộng và đếm những sinh viên đã có điểm.
     for (student in students) {
         if (student.score == null) {
             missingScoreCount++

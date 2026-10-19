@@ -28,11 +28,11 @@ import com.example.tuan03project.ui.theme.Tuan03ProjectTheme
 
 @Composable
 fun MainScreen() {
-    // Lưu trạng thái đã nhấn nút hay chưa
+
     var daNhanNut by remember { mutableStateOf(false) }
     val mauChu = Color(0xFF202020)
 
-    // Chia màn hình thành ba vùng theo ảnh mẫu
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -88,7 +88,7 @@ fun MainScreen() {
         ) {
             Button(
                 onClick = {
-                    // Đổi nội dung khi nhấn nút
+
                     daNhanNut = true
                 },
                 modifier = Modifier.width(180.dp).height(54.dp),

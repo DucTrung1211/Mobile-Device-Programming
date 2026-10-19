@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun Tuan03ProjectTheme(content: @Composable () -> Unit) {
-    // Giữ cấu hình theme sáng như giao diện ban đầu
+
     MaterialTheme(colorScheme = lightColorScheme()) {
         content()
     }

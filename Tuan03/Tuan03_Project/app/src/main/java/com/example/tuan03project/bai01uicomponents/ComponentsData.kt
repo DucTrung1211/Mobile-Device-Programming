@@ -1,6 +1,6 @@
 package com.example.tuan03project.bai01uicomponents
 
-// Một mục dữ liệu tương ứng một màn hình ví dụ.
+
 data class ComponentInfo(
     val id: String,
     val name: String,

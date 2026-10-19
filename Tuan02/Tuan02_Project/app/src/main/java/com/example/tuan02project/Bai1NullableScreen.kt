@@ -26,7 +26,6 @@ fun Bai1NullableScreen() {
         Student("Phạm Quốc Dũng", null, null),
         Student("Võ Thanh Em", "em@sv.edu.vn", "0933 111 222")
     )
-    // Đếm sinh viên thiếu email bằng for và if.
     var missingEmailCount = 0
     for (student in students) {
         if (student.email == null) missingEmailCount++
