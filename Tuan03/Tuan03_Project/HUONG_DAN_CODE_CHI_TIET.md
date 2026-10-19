@@ -6,7 +6,7 @@ Tài liệu tiếng Việt dành cho sinh viên đang học Kotlin/Compose. Số
 
 Run module app trong Android Studio. Trang chọn bài có hai nút:
 
-- **Tuần 04 · Bài 01 — UI Components**: Intro → I'm ready → danh sách → nhấn component → chi tiết.
+- **Tuần 03 · Bài 01 — UI Components**: Intro → I'm ready → danh sách → nhấn component → chi tiết.
 - **Tuần 03 — My First App**: mở nguyên MainScreen cũ, nhấn Say Hi! để hiện tên.
 - Back ở chi tiết → danh sách; Back ở danh sách → Intro; Back ở Intro → chọn bài.
 - Back ở bài cũ → chọn bài. Không thêm nút chọn bài lên những màn hình tham chiếu.

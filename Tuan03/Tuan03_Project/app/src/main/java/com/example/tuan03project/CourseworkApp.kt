@@ -28,7 +28,7 @@ fun CourseworkApp() {
             Text("Bài tập Compose", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(24.dp))
             Button(onClick = { baiDangMo = "moi" }, modifier = Modifier.fillMaxWidth()) {
-                Text("Tuần 04 · Bài 01 — UI Components")
+                Text("Tuần 03 · Bài 01 — UI Components")
             }
             OutlinedButton(onClick = { baiDangMo = "cu" }, modifier = Modifier.fillMaxWidth()) {
                 Text("Tuần 03 — My First App")

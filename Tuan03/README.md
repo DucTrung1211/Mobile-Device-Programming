@@ -6,12 +6,12 @@
 - Ban đầu: `My First App`, `Hello`, nút `Say Hi!`.
 - Sau khi nhấn: thay `Hello` bằng hai dòng `I'm` và `Nguyen Van A`.
 - Tiêu đề và nút giữ nguyên vị trí; trạng thái của bài My First App dùng `remember`.
-- **Tuần 04 – Bài 01 — UI Components:** nằm trong chính `Tuan03_Project`, gồm Intro, danh sách và 79 ví dụ Compose thuộc các nhóm Display, Input, Layout, Selection, Actions, Content, Navigation và Feedback.
-- Trang chọn bài cho phép mở cả hai bài; không có thư mục Tuan04 riêng.
+- **Tuần 03 – Bài 01 — UI Components:** nằm trong chính `Tuan03_Project`, gồm Intro, danh sách và 79 ví dụ Compose thuộc các nhóm Display, Input, Layout, Selection, Actions, Content, Navigation và Feedback.
+- Trang chọn bài cho phép mở cả hai bài của Tuần 03.
 
 ## Project và cách chạy
 
-Mở [Tuan03_Project](./Tuan03_Project) bằng Android Studio, chờ Gradle sync, chọn thiết bị rồi Run module `app`. Tại trang chọn bài, chọn **Tuần 03 — My First App** hoặc **Tuần 04 · Bài 01 — UI Components**; với bài UI Components, nhấn **I'm ready** để mở danh sách.
+Mở [Tuan03_Project](./Tuan03_Project) bằng Android Studio, chờ Gradle sync, chọn thiết bị rồi Run module `app`. Tại trang chọn bài, chọn **Tuần 03 — My First App** hoặc **Tuần 03 · Bài 01 — UI Components**; với bài UI Components, nhấn **I'm ready** để mở danh sách.
 
 Từ thư mục project trên Windows:
 

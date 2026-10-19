@@ -2,7 +2,7 @@
 <journey name="Reference screens and old coursework">
     <description>Start from the coursework menu. Check reference UI, live input, password, back navigation and the preserved old exercise.</description>
     <actions xml:space="preserve">
-        <action>Tap 'Tuần 04 · Bài 01 — UI Components'</action>
+        <action>Tap 'Tuần 03 · Bài 01 — UI Components'</action>
         <action>Verify 'Jetpack Compose' and "I'm ready" are visible with a Compose logo</action>
         <action>Tap "I'm ready"</action>
         <action>Verify the title 'UI Components List' and the first six items Text, Image, TextField, PasswordField, Column, Row</action>

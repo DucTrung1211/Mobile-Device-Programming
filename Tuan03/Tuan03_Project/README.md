@@ -1,6 +1,6 @@
 # Tuan03_Project — Báo cáo hoàn thiện bài UI Components
 
-Cập nhật 19/10/2026. Bài “TUẦN 04 | Bài 01” được làm trong chính Tuan03_Project, không tạo project mới.
+Cập nhật 19/10/2026. Bài “TUẦN 03 | Bài 01 — UI Components” được làm trong chính Tuan03_Project, không tạo project mới.
 
 ## 1. Cấu trúc trước khi làm
 
@@ -15,7 +15,7 @@ Giữ cấu trúc Gradle và theme cũ, thêm CourseworkApp.kt để chọn bài
 ```text
 MainActivity.kt → CourseworkApp()
   ├─ Tuần 03 → MainScreen() nguyên bản
-  └─ Tuần 04 · Bài 01 → ComponentsApp()
+  └─ Tuần 03 · Bài 01 → ComponentsApp()
        ├─ IntroScreen
        ├─ ComponentsListScreen ← ComponentsData
        └─ ComponentDetailScreen → examples theo nhóm
@@ -124,7 +124,7 @@ Font hệ thống Android và kích thước thanh hệ thống khác thiết k�
 
 ## 13. Cách chạy bài mới
 
-Mở đúng thư mục dự án bằng Android Studio, chờ sync, chọn emulator/thiết bị, Run module app. Ở trang chọn bài nhấn **Tuần 04 · Bài 01 — UI Components**, sau đó **I'm ready**.
+Mở đúng thư mục dự án bằng Android Studio, chờ sync, chọn emulator/thiết bị, Run module app. Ở trang chọn bài nhấn **Tuần 03 · Bài 01 — UI Components**, sau đó **I'm ready**.
 
 ```powershell
 .\gradlew.bat :app:testDebugUnitTest :app:assembleDebug
