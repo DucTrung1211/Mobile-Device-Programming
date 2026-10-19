@@ -21,5 +21,3 @@ Lập trình Thiết bị Di động.
 | Tuần 01 | Profile UI và bài tập tìm hiểu | [Xem bài Tuần 01](./Tuan01) |
 | Tuần 02 | State, Nullable, For và If/Else | [Xem bài Tuần 02](./Tuan02) |
 | Tuần 03 | Jetpack Compose UI và UI Components | [Xem bài Tuần 03](./Tuan03) |
-
-Trong [Tuan03_Project](./Tuan03/Tuan03_Project) có bài **My First App** (Text, Button và state) và bài **Tuần 04 – Bài 01: UI Components** (Intro, danh sách và 79 ví dụ thành phần Compose). Bài UI Components được lưu trong thư mục Tuần 03 theo cách tổ chức hiện tại.
