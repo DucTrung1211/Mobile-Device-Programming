@@ -21,3 +21,4 @@ Lập trình Thiết bị Di động.
 | Tuần 01 | Profile UI và bài tập tìm hiểu | [Xem bài Tuần 01](./Tuan01) |
 | Tuần 02 | State, Nullable, For và If/Else | [Xem bài Tuần 02](./Tuan02) |
 | Tuần 03 | Jetpack Compose UI và UI Components | [Xem bài Tuần 03](./Tuan03) |
+| Tuần 04 | Navigation và LazyColumn | [Xem bài Tuần 04](./Tuan04) |
