@@ -22,3 +22,4 @@ Lập trình Thiết bị Di động.
 | Tuần 02 | State, Nullable, For và If/Else | [Xem bài Tuần 02](./Tuan02) |
 | Tuần 03 | Jetpack Compose UI và UI Components | [Xem bài Tuần 03](./Tuan03) |
 | Tuần 04 | Navigation, OOP và Data Flow | [Xem bài Tuần 04](./Tuan04) |
+| Tuần 05 | UTH Auth — Firebase Authentication với Google | [Xem bài Tuần 05](./Tuan05) |
