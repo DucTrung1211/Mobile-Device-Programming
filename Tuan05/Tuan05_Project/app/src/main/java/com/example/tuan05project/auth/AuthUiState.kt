@@ -1,8 +1,17 @@
 package com.example.tuan05project.auth
 
-sealed class AuthUiState {
-    data object SignedOut : AuthUiState()
-    data object Loading : AuthUiState()
-    data class Success(val userLabel: String) : AuthUiState()
-    data class Error(val message: String) : AuthUiState()
+data class AuthUser(
+    val uid: String,
+    val name: String?,
+    val email: String?,
+    val photoUrl: String?,
+    val providers: List<String>
+) {
+    val displayName: String get() = name?.takeIf { it.isNotBlank() } ?: email?.substringBefore("@") ?: "Bạn"
+    val providerLabel: String get() = if ("google.com" in providers) "Đã liên kết tài khoản Google" else providers.joinToString().ifBlank { "Firebase Authentication" }
 }
+data class AuthUiState(
+    val user: AuthUser? = null,
+    val loading: Boolean = false,
+    val message: String? = null
+)

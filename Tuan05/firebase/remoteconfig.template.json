@@ -1,0 +1,9 @@
+{
+  "parameters": {
+    "home_task_limit": {
+      "defaultValue": { "value": "4" },
+      "valueType": "NUMBER",
+      "description": "Maximum real tasks rendered on home; Android clamps to 1..10."
+    }
+  }
+}

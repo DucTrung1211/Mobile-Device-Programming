@@ -1,0 +1,72 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        "tasks": {
+          "$taskId": {
+            ".validate": "newData.hasChildren(['title','note','category','date','time','reminder','priority'])",
+            "title": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 200"
+            },
+            "note": {
+              ".validate": "newData.isString() && newData.val().length <= 4000"
+            },
+            "category": {
+              ".validate": "newData.val() === 'STUDY' || newData.val() === 'LIFE'"
+            },
+            "date": {
+              ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)"
+            },
+            "time": {
+              ".validate": "newData.isString() && newData.val().matches(/^([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/)"
+            },
+            "reminder": {
+              ".validate": "newData.isBoolean()"
+            },
+            "priority": {
+              ".validate": "newData.val() === 'LOW' || newData.val() === 'MEDIUM' || newData.val() === 'HIGH'"
+            },
+            "completedDate": {
+              ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "profile": {
+          "avatarVersion": {
+            ".validate": "newData.isNumber() && newData.val() <= now"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "$other": {
+          ".validate": false
+        },
+        "deviceRegistrations": {
+          "$deviceId": {
+            ".validate": "newData.hasChildren(['identifier','kind','updatedAt'])",
+            "identifier": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length < 8192"
+            },
+            "kind": {
+              ".validate": "newData.val() === 'fid' || newData.val() === 'token'"
+            },
+            "updatedAt": {
+              ".validate": "newData.isNumber() && newData.val() <= now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
+      }
+    }
+  }
+}

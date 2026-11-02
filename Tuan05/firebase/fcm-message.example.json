@@ -1,0 +1,10 @@
+{
+  "message": {
+    "fid": "REPLACE_ON_TRUSTED_SERVER_ONLY",
+    "data": {
+      "recipientUid": "REPLACE_WITH_RECIPIENT_UID",
+      "taskId": "REPLACE_WITH_EXISTING_TASK_KEY"
+    },
+    "android": { "priority": "high" }
+  }
+}
