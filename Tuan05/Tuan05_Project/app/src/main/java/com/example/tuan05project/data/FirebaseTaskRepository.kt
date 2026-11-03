@@ -6,8 +6,10 @@ import com.google.firebase.database.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -43,9 +45,19 @@ class FirebaseTaskRepository : TaskRepository {
         reference.addValueEventListener(listener)
         awaitClose { reference.removeEventListener(listener) }
     }
+    // .info/connected is a client-local path: get() would query the server and fail, so listen instead.
+    private fun connected(): Flow<Boolean> = callbackFlow {
+        val reference = database().getReference(".info/connected")
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) { trySend(snapshot.getValue(Boolean::class.java) == true) }
+            override fun onCancelled(error: DatabaseError) { close(error.toException()) }
+        }
+        reference.addValueEventListener(listener)
+        awaitClose { reference.removeEventListener(listener) }
+    }
     private suspend fun requireOnline() {
-        val connected = withTimeout(10_000) { database().getReference(".info/connected").get().await().getValue(Boolean::class.java) }
-        check(connected == true) { "Mất kết nối Realtime Database. Hãy kết nối mạng rồi thử lại." }
+        val online = withTimeoutOrNull(10_000) { connected().first { it } }
+        check(online == true) { "Mất kết nối Realtime Database. Hãy kết nối mạng rồi thử lại." }
     }
     override suspend fun save(uid: String, id: String?, draft: TaskDraft) {
         require(draft.title.isNotBlank() && draft.title.length <= 200 && draft.note.length <= 4000) { "Tên tối đa 200 ký tự, ghi chú tối đa 4000 ký tự." }

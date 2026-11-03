@@ -3,6 +3,7 @@ package com.example.tuan05project.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -16,8 +17,8 @@ class AuthViewModel(
     val uiState = mutable.asStateFlow()
     init {
         viewModelScope.launch {
-            repository.users.catch { mutable.update { it.copy(message = "Không khởi tạo được Firebase. Kiểm tra google-services.json.") } }
-                .collect { user -> mutable.update { it.copy(user = user) } }
+            repository.users.catch { mutable.update { it.copy(restoring = false, message = "Không khởi tạo được Firebase. Kiểm tra google-services.json.") } }
+                .collect { user -> mutable.update { it.copy(user = user, restoring = false) } }
         }
     }
     fun signIn(token: suspend () -> String, onSuccess: () -> Unit = {}) {
@@ -41,18 +42,19 @@ class AuthViewModel(
         mutable.update { it.copy(loading = true) }
         viewModelScope.launch {
             try {
+                // A cleanup timeout is a failed cleanup, not a cancelled logout: sign-out must still happen.
                 var cleanupFailed = false
-                try { beforeSignOut() } catch (error: CancellationException) { throw error } catch (_: Exception) { cleanupFailed = true }
+                try { beforeSignOut() } catch (_: TimeoutCancellationException) { cleanupFailed = true } catch (error: CancellationException) { throw error } catch (_: Exception) { cleanupFailed = true }
                 repository.signOut()
-                mutable.value = AuthUiState(loading = true)
-                try { clearCredential() } catch (error: CancellationException) { throw error } catch (_: Exception) { cleanupFailed = true }
-                mutable.value = AuthUiState(message = if (cleanupFailed)
+                mutable.value = AuthUiState(restoring = false, loading = true)
+                try { clearCredential() } catch (_: TimeoutCancellationException) { cleanupFailed = true } catch (error: CancellationException) { throw error } catch (_: Exception) { cleanupFailed = true }
+                mutable.value = AuthUiState(restoring = false, message = if (cleanupFailed)
                     "Đã đăng xuất. Chưa xác nhận dọn token thông báo hoặc trạng thái chọn tài khoản; cần kiểm tra mạng/cấu hình."
                     else "Đã đăng xuất.")
             } catch (error: CancellationException) { throw error
             } catch (_: Exception) {
                 repository.signOut()
-                mutable.value = AuthUiState(message = "Đã đăng xuất Firebase. Không xóa được trạng thái chọn tài khoản Google; hãy chọn lại tài khoản khi đăng nhập.")
+                mutable.value = AuthUiState(restoring = false, message = "Đã đăng xuất Firebase. Không xóa được trạng thái chọn tài khoản Google; hãy chọn lại tài khoản khi đăng nhập.")
             }
         }
     }

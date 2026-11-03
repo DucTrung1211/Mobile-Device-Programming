@@ -154,7 +154,12 @@ class TodoViewModel(
     override fun updateSoundEnabled(enabled: Boolean) { mutable.update { it.copy(settings = it.settings.copy(isSoundOn = enabled)) } }
     override fun updateDailySummaryEnabled(enabled: Boolean) { message("Tổng kết lúc 21:00 cần bộ lập lịch trên backend; chưa được triển khai.") }
 }
-fun dataError(error: Exception): String = when {
+fun dataError(error: Exception): String {
+    // Debug-only diagnostics: exception type and SDK message, never user data or tokens.
+    if (com.example.tuan05project.BuildConfig.DEBUG) android.util.Log.w("TodoData", "Firebase operation failed: ${error.javaClass.name}: ${error.message}")
+    return dataMessage(error)
+}
+private fun dataMessage(error: Exception): String = when {
     error.message?.contains("Permission denied", true) == true -> "Máy chủ từ chối quyền truy cập. Kiểm tra phiên đăng nhập và rules theo UID."
     error is IllegalArgumentException || error is IllegalStateException -> error.message ?: "Cấu hình hoặc dữ liệu không hợp lệ."
     else -> "Dịch vụ Firebase chưa sẵn sàng. Kiểm tra mạng, URL, rules và cấu hình Console."

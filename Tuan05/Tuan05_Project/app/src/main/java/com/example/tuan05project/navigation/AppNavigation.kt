@@ -6,8 +6,6 @@ import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -20,6 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tuan05project.auth.*
 import com.example.tuan05project.features.legacy.LegacyAuthScreen
+import com.example.tuan05project.features.lessons.LessonPickerScreen
 import com.example.tuan05project.features.services.*
 import com.example.tuan05project.features.todo.model.TodoTab
 import com.example.tuan05project.features.todo.ui.account.ProfileScreen
@@ -29,6 +28,7 @@ import com.example.tuan05project.features.todo.ui.task.TaskFormScreen
 import com.example.tuan05project.features.todo.ui.theme.TodoTheme
 import com.example.tuan05project.features.todo.viewmodel.TodoViewModel
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.withTimeout
 
 data class NotificationOpen(val uid: String, val taskId: String?)
 
@@ -47,27 +47,28 @@ fun AppNavigation(activity: Activity, notification: StateFlow<NotificationOpen?>
     val serviceState by services.state.collectAsStateWithLifecycle()
     val notices by services.notices.collectAsStateWithLifecycle()
     val pending by notification.collectAsStateWithLifecycle()
-    var lesson by rememberSaveable { mutableIntStateOf(0) }
+    var lesson by rememberSaveable { mutableStateOf(Lesson.PICKER) }
     var guest by rememberSaveable(lesson, authState.user?.uid) { mutableStateOf(false) }
     var route by rememberSaveable(lesson, authState.user?.uid, guest) { mutableStateOf("home") }
     var pendingTask by rememberSaveable { mutableStateOf<String?>(null) }
     var requestedUid by rememberSaveable { mutableStateOf<String?>(null) }
-    val destination = destinationFor(lesson, authState.user != null, guest, route)
+    val integrated = lesson == Lesson.FIREBASE && authState.user != null
+    val destination = destinationFor(lesson, authState.restoring, authState.user != null, guest, route)
     val google = remember { GoogleSignInManager() }
     val logout = {
         guest = false
         auth.signOut(
-            clearCredential = { google.clear(activity.applicationContext) },
+            clearCredential = { withTimeout(8_000) { google.clear(activity.applicationContext) } },
             beforeSignOut = {
                 activity.getSystemService(NotificationManager::class.java).cancelAll()
                 services.revoke()
             })
     }
 
-    LaunchedEffect(lesson, authState.user) { todo.bind(authState.user, lesson == 2 && authState.user != null) }
+    LaunchedEffect(lesson, authState.user) { todo.bind(authState.user, integrated) }
     LaunchedEffect(pending) {
         pending?.let {
-            requestedUid = it.uid; pendingTask = it.taskId; lesson = 2
+            requestedUid = it.uid; pendingTask = it.taskId; lesson = Lesson.FIREBASE
             consume()
         }
     }
@@ -82,33 +83,34 @@ fun AppNavigation(activity: Activity, notification: StateFlow<NotificationOpen?>
         }
     }
     LaunchedEffect(lesson, authState.user?.uid) {
-        if (lesson == 2 && authState.user != null) services.registerToken()
+        if (integrated) services.registerToken()
     }
     LaunchedEffect(destination, state.selectedTab, state.editorOpen) {
         services.screen(if (state.editorOpen) "task_form" else if (destination == Destination.HOME) state.selectedTab.name.lowercase() else destination.name.lowercase())
     }
-    BackHandler(enabled = lesson != 0) {
+    BackHandler(enabled = lesson != Lesson.PICKER) {
         if (!authState.loading && !state.busy) when {
             state.editorOpen -> todo.closeEditor()
             route != "home" -> route = "home"
             destination == Destination.HOME && state.selectedTab != TodoTab.HOME -> todo.selectTab(TodoTab.HOME)
-            else -> lesson = 0
+            else -> lesson = Lesson.PICKER
         }
     }
 
     TodoTheme(state.settings) {
         Box(Modifier.fillMaxSize().background(TodoTheme.colors.background)) {
             when (destination) {
-                Destination.LESSONS -> LessonPicker { lesson = it }
+                Destination.LESSONS -> LessonPickerScreen(authState.user?.displayName) { lesson = it }
+                Destination.RESTORING -> CircularProgressIndicator(Modifier.align(Alignment.Center))
                 Destination.LOGIN -> AuthScreen(authState, onLoginClick = {
                     auth.signIn({ google.requestGoogleIdToken(activity) }) { services.telemetry.event("login", "method", "google") }
-                }, onBack = { if (!authState.loading) lesson = 0 }, onGuest = { guest = true })
+                }, onBack = { if (!authState.loading) lesson = Lesson.PICKER }, onGuest = { guest = true })
                 Destination.LEGACY -> LegacyAuthScreen(authState) {
                     auth.signIn({ google.requestGoogleIdToken(activity) }) { services.telemetry.event("login", "method", "google") }
                 }
                 else -> {
                     // Do not render a previous user's data while the binding effect is pending.
-                    if (state.user?.uid != authState.user?.uid || state.integrated != (lesson == 2 && authState.user != null)) {
+                    if (state.user?.uid != authState.user?.uid || state.integrated != integrated) {
                         CircularProgressIndicator(Modifier.align(Alignment.Center))
                     } else if (state.editorOpen) {
                         TaskFormScreen(state, state.editingId, todo::closeEditor, todo::saveTask, todo::deleteTask)
@@ -118,10 +120,8 @@ fun AppNavigation(activity: Activity, notification: StateFlow<NotificationOpen?>
                         Destination.SERVICES -> ServicesScreen(state, serviceState, notices, { route = "home" },
                             services::registerToken, todo::refreshConfig, todo::openEditor)
                         else -> Column(Modifier.fillMaxSize().statusBarsPadding()) {
-                            if (!state.integrated) {
-                                Text(if (guest) "Phiên khách — không đồng bộ Firebase" else "Bài 01 — Firebase Authentication",
-                                    Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
-                                    style = MaterialTheme.typography.labelSmall, color = TodoTheme.colors.textSecondary)
+                            LessonLabel(if (guest) "${lesson.code} · Phiên khách — không đồng bộ Firebase" else "${lesson.code} — ${lesson.title}") {
+                                if (!state.busy) lesson = Lesson.PICKER
                             }
                             if (state.error != null) Row(Modifier.padding(horizontal = 20.dp)) {
                                 Text(state.error!!, Modifier.weight(1f), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
@@ -134,7 +134,7 @@ fun AppNavigation(activity: Activity, notification: StateFlow<NotificationOpen?>
                                     TodoTab.LIST -> TaskListScreen(state, todo, todo::openEditor)
                                     TodoTab.SETTINGS -> Column {
                                         Box(Modifier.weight(1f)) { SettingsScreen(state, todo) { route = "profile" } }
-                                        TextButton(onClick = { if (lesson == 2 && authState.user != null) route = "services" else todo.message("Dịch vụ Firebase nằm ở Bài 02 và cần tài khoản Firebase.") },
+                                        TextButton(onClick = { if (integrated) route = "services" else todo.message("Dịch vụ Firebase nằm ở Bài 02 và cần tài khoản Firebase.") },
                                             modifier = Modifier.fillMaxWidth()) { Text("Dịch vụ Firebase · FCM, Remote Config, AdMob") }
                                     }
                                     TodoTab.NOTIFICATIONS -> if (state.integrated) ServicesScreen(state, serviceState, notices, { todo.selectTab(TodoTab.HOME) },
@@ -156,14 +156,11 @@ fun AppNavigation(activity: Activity, notification: StateFlow<NotificationOpen?>
         }
     }
 }
+/** Small header that names the open exercise and leads back to the lesson picker. */
 @Composable
-private fun LessonPicker(onSelect: (Int) -> Unit) {
-    Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)) {
-        Text("Tuần 05 · UTH Todo", style = MaterialTheme.typography.headlineMedium)
-        Text("Chọn bài thực hành", style = MaterialTheme.typography.bodyLarge)
-        Button(onClick = { onSelect(1) }, modifier = Modifier.fillMaxWidth()) { Text("Bài 01 — Firebase Authentication") }
-        Button(onClick = { onSelect(2) }, modifier = Modifier.fillMaxWidth()) { Text("Bài 02 — Tích hợp dịch vụ Firebase") }
-        OutlinedButton(onClick = { onSelect(3) }, modifier = Modifier.fillMaxWidth()) { Text("Bài cũ — Login by Gmail") }
+private fun LessonLabel(text: String, onBack: () -> Unit) {
+    TextButton(onClick = onBack, modifier = Modifier.padding(horizontal = 8.dp).heightIn(min = 32.dp),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)) {
+        Text("‹ $text", style = MaterialTheme.typography.labelSmall, color = TodoTheme.colors.textSecondary)
     }
 }

@@ -35,10 +35,11 @@ class TaskStateTest {
         assertEquals(0, percent(0,0))
     }
     @Test fun logoutGateNeverReturnsProtectedRoutesAndGuestIsExplicit() {
-        for (route in listOf("home","profile","services")) assertEquals(Destination.LOGIN, destinationFor(2,false,false,route))
-        assertEquals(Destination.PROFILE, destinationFor(1,true,false,"profile"))
-        assertEquals(Destination.HOME, destinationFor(2,false,true,"services"))
-        assertEquals(Destination.LEGACY, destinationFor(3,false,false,"home"))
+        for (route in listOf("home","profile","services")) assertEquals(Destination.LOGIN, destinationFor(Lesson.FIREBASE,false,false,false,route))
+        assertEquals(Destination.PROFILE, destinationFor(Lesson.AUTH,false,true,false,"profile"))
+        assertEquals(Destination.HOME, destinationFor(Lesson.FIREBASE,false,false,true,"services"))
+        assertEquals(Destination.HOME, destinationFor(Lesson.AUTH,false,true,false,"services"))
+        assertEquals(Destination.LEGACY, destinationFor(Lesson.LEGACY,false,false,false,"home"))
         assertNull(validTaskId("../alice/tasks")); assertNull(validTaskId("https://untrusted.test"))
         assertEquals("-Push_123", validTaskId("-Push_123"))
     }

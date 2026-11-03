@@ -12,15 +12,16 @@ Kết quả thực thi, thiết bị, kiểm chứng Firebase và giới hạn n
 
 1. Android Studio → Open → `Tuan05/Tuan05_Project`; chờ Gradle Sync.
 2. Chọn emulator có Google Play hoặc thiết bị có Credential Manager/Google Play Services.
-3. Run module `app`. Màn hình đầu tiên có **Bài 01**, **Bài 02** và **Bài cũ — Login by Gmail**.
-4. Back từ trang chủ trở về chọn bài; phiên Firebase vẫn được giữ. Đăng xuất tại Hồ sơ để kết thúc phiên.
+3. Run module `app`. Màn hình đầu tiên là danh sách bài: **Bài 01 — Firebase Authentication**, **Bài 02 — Tích hợp dịch vụ Firebase** và **Bài cũ — Login by Gmail** (`features/lessons/LessonPickerScreen.kt`).
+4. Trong mỗi bài, dòng nhãn `‹ Bài 0x — …` phía trên trang chủ hoặc phím Back (từ tab Trang chủ) trở về danh sách bài; phiên Firebase vẫn được giữ. Đăng xuất tại Hồ sơ để kết thúc phiên.
+5. Hai bài dùng chung một phiên Firebase nhưng tách luồng: Bài 01 chỉ dùng Authentication (không ghi dữ liệu); Bài 02 bật Realtime Database, Storage, FCM, Analytics, Remote Config, Crashlytics và AdMob thử nghiệm.
 
 ### Bài 01 — Firebase Authentication
 
 - Credential Manager mở chọn tài khoản Google; ID token được xác thực bằng Firebase Authentication.
 - Chỉ thông báo thành công sau khi `signInWithCredential` hoàn tất; có trạng thái bận, chặn bấm lặp, thông báo lỗi cấu hình/mạng/xác thực và phản hồi khi hủy.
 - Trang chủ dùng tên/ảnh thật. Nhấn avatar để mở Hồ sơ: tên, email, provider, ảnh hoặc chữ viết tắt; có fallback khi thiếu dữ liệu.
-- AuthStateListener khôi phục phiên. ViewModel giữ trạng thái khi xoay màn hình. Khi đăng xuất, Firebase sign-out và Credential Manager clear đều được thực hiện; điều hướng kiểm tra phiên trước mọi màn hình bảo vệ.
+- AuthStateListener khôi phục phiên; trong lúc Firebase chưa báo trạng thái phiên, app hiện vòng chờ thay vì nháy màn đăng nhập (`AuthUiState.restoring`). ViewModel và `rememberSaveable` giữ bài/route khi xoay màn hình. Khi đăng xuất, Firebase sign-out và Credential Manager clear đều được thực hiện; điều hướng kiểm tra phiên trước mọi màn hình bảo vệ.
 - Phiên khách được gắn nhãn riêng, không liên kết Google và không ghi dữ liệu Firebase.
 - Thống kê công việc ở Bài 01 bắt đầu rỗng; không dùng dữ liệu mẫu để giả lập Firebase. CRUD và đồng bộ nằm ở Bài 02.
 - Không thấy tài liệu chấm bài local bắt buộc Facebook/email/phone ngoài Google; hai slide đề bài dùng Google làm màn hình minh họa.
@@ -45,9 +46,10 @@ Tuan05/
 │   │   ├── auth/                    # repository, Google credential, state, ViewModel, lỗi
 │   │   ├── core/ui/                 # màu icon system bars theo theme
 │   │   ├── data/                    # RTDB, codec, avatar, registration, telemetry, Remote Config
-│   │   ├── navigation/              # chọn bài, điều hướng, kiểm tra phiên
+│   │   ├── navigation/              # Lesson enum, điều hướng, kiểm tra phiên (SessionGate)
 │   │   ├── messaging/               # FCM service, channel, inbox nhận thực tế
 │   │   └── features/
+│   │       ├── lessons/             # màn chọn Bài 01 / Bài 02 / bài cũ
 │   │       ├── legacy/              # giữ UI Login by Gmail cũ
 │   │       ├── services/            # trạng thái và trang demo dịch vụ
 │   │       └── todo/
@@ -56,7 +58,7 @@ Tuan05/
 │   │           └── ui/{account,common,main,task,theme}/
 │   ├── app/src/debug/               # nút crash/non-fatal chỉ trong debug
 │   ├── app/src/release/             # không có nút gây crash
-│   └── app/src/test/                # auth, navigation, codec, state, lỗi repository
+│   └── app/src/test/                # auth, restore phiên, navigation, CRUD/tiến độ, analytics không PII, lỗi/retry
 ├── firebase/                       # rules, emulator tests, Remote Config, mẫu FCM/Test Lab
 ├── hosting/index.html              # trang tĩnh chuẩn bị; chưa deploy
 └── VERIFICATION.md
@@ -78,23 +80,27 @@ Các màn hình được chuyển sang nhận state bất biến và callbacks, 
 [cài đặt 17870:1451](https://www.figma.com/design/ivYBomXm4kJqddjjzvqhl1/UTH-Mobile--Copy-?node-id=17870-1451).
 Không vẽ khung điện thoại, vùng canvas và tiêu đề đánh số vào app. Insets dùng vùng an toàn của Android, form có IME padding và cuộn. Mức khớp thị giác thực tế xem báo cáo kiểm chứng; chưa mặc định đạt pixel-perfect.
 
-## Firebase: cấu hình thật cần kiểm tra
+## Firebase: đã kết nối và phần còn lại
 
-File `app/google-services.json` hiện có đúng package, project `uthsmarttasks-week5`, OAuth client Android và Web; giữ nguyên file này. Đây là cấu hình client, không phải service-account key. Không thêm key máy chủ/token vào source.
+File `app/google-services.json` đúng package, project `uthsmarttasks-week5`, có OAuth client Android (SHA-1 khớp keystore debug) và Web; giữ nguyên file này. Đây là cấu hình client, không phải service-account key. Không có key máy chủ/token trong source.
 
-1. Bật **Authentication → Google**, chọn support email. Kiểm tra SHA-1 **và** SHA-256 của chứng thư đang ký bản debug/release:
-   ` .\gradlew.bat :app:signingReport `.
-2. Sau khi cập nhật OAuth, lấy config mới bằng Firebase CLI đã đăng nhập:
-   `npx -y firebase-tools@latest apps:list --project uthsmarttasks-week5`,
-   rồi `npx -y firebase-tools@latest apps:sdkconfig ANDROID <APP_ID_THẬT> --project uthsmarttasks-week5`.
-   Lưu đúng JSON vào `Tuan05_Project/app/google-services.json`; không thay bằng JSON giả.
-3. Tạo/chọn **Realtime Database** ở Console. Bản config local chưa có database URL; đặt URL instance thật vào [firebase_config.xml](./Tuan05_Project/app/src/main/res/values/firebase_config.xml), chuỗi `todo_database_url`, hoặc cập nhật config có database URL. Không đoán region/hostname.
-4. Từ `Tuan05/firebase`, sau khi kiểm tra project và quyền, triển khai rules:
-   `npx -y firebase-tools@latest deploy --only database,storage --project uthsmarttasks-week5`.
-   Agent chưa tự chạy deploy. Không dùng test mode/public rules. Dữ liệu: `users/{uid}/tasks/{pushId}`, `profile/avatarVersion`, `deviceRegistrations/{installationId}`.
-5. Storage bucket hiện được khai báo trong config. Kiểm tra bucket tồn tại, rules và billing hiện có. [Firebase yêu cầu Blaze cho Cloud Storage](https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024); chủ tài khoản quyết định billing, agent không tự bật.
-6. Bật/liên kết Analytics và khởi tạo Crashlytics trong Console. Publish Remote Config với parameter `home_task_limit` (mặc định 4); template đã chuẩn bị trong `firebase/remoteconfig.template.json`. App giới hạn giá trị 1..10 để không phá bố cục.
-7. Đăng nhập Bài 02, bật quyền thông báo, đăng ký thiết bị. FCM 26 dùng register/onRegistered bằng FID và unregister khi đăng xuất; callback onNewToken vẫn xử lý token legacy. Mỗi registration lưu identifier, kind và timestamp theo UID; không in identifier/token vào UI/log. Đối chiếu [FCM hiện hành](https://firebase.google.com/docs/cloud-messaging/android/get-started) và [gửi bằng fid](https://firebase.google.com/docs/cloud-messaging/send/admin-sdk). Dùng Console để đọc token của tài khoản kiểm thử hoặc backend có quyền; không commit token.
+Đã thực hiện ngày 2026-11-03 bằng Firebase CLI do chủ project tự đăng nhập:
+
+| Hạng mục | Trạng thái |
+|---|---|
+| Realtime Database | Đang hỗ trợ; [Android read/write](https://firebase.google.com/docs/database/android/read-and-write), [rules](https://firebase.google.com/docs/database/security) | CRUD, completion, listener và tiến độ thật trong FirebaseTaskRepository; rules theo UID | **Đã chạy thật** trên emulator: thêm/sửa/hoàn thành/xóa, server phản ánh đúng; rules Emulator 5/5; anonymous bị 401 | Hai tài khoản Google thật CHƯA KIỂM CHỨNG (rules Emulator đã chặn UID khác) |
+| Database rules | Đã deploy [database.rules.json](./firebase/database.rules.json) (`firebase deploy --only database`). Đọc REST không xác thực trả **401 Permission denied** |
+| Remote Config | Đang hỗ trợ; [Android](https://firebase.google.com/docs/remote-config/android/get-started) | Default 4, fetchAndActivate, clamp home_task_limit, hiển thị trạng thái | Template đã publish (v1); app fetch thành công trên emulator | Đổi giá trị trên Console để thử kích hoạt giá trị mới |
+| Storage | Cloud Storage đang hỗ trợ; [upload](https://firebase.google.com/docs/storage/android/upload-files), [billing](https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024) | Upload avatar có progress/error, đọc bytes qua SDK, MIME/5 MiB, owner rules | Rules Emulator hai UID/MIME/size; upload thật **CHƯA KIỂM CHỨNG** vì bucket chưa tồn tại (404) | Nâng Blaze, tạo bucket, deploy storage rules |
+| Authentication | Đang hỗ trợ; [Google + Credential Manager](https://firebase.google.com/docs/auth/android/google-signin) | Dùng chung AuthRepository/AuthViewModel cho hai bài; restore, sign-out, fallback hồ sơ | **Đã chạy thật**: hủy, đăng nhập thành công, khôi phục phiên, đăng xuất + Back; unit test | Thêm SHA release khi phát hành |
+
+Việc còn lại cho chủ project:
+
+1. Muốn dùng Storage: nâng Blaze → Console → Storage → *Get started*, rồi từ `Tuan05/firebase` chạy `npx -y firebase-tools@latest deploy --only storage --project uthsmarttasks-week5`.
+2. Khi ký bản release, thêm SHA-1/SHA-256 release vào Firebase (`.\gradlew.bat :app:signingReport`) và tải lại `google-services.json` bằng `apps:sdkconfig`.
+3. Mở Console → Crashlytics / Analytics DebugView để xem báo cáo đã gửi (client đã gửi, Console **CHƯA KIỂM CHỨNG**).
+
+Dữ liệu: `users/{uid}/tasks/{pushId}`, `users/{uid}/profile/avatarVersion`, `users/{uid}/deviceRegistrations/{installationId}`. FCM 26 dùng `register()`/`onRegistered` bằng FID (chạy ngoài main thread) và `unregister()` khi đăng xuất; `onNewToken` vẫn xử lý token legacy. Không in identifier/token ra UI/log. Tham khảo [FCM hiện hành](https://firebase.google.com/docs/cloud-messaging/android/get-started) và [gửi bằng fid](https://firebase.google.com/docs/cloud-messaging/send/admin-sdk).
 
 ### Gửi FCM và kiểm tra điều hướng
 
@@ -112,25 +118,25 @@ AdMob dùng sample app ID `ca-app-pub-3940256099942544~3347511713` và banner te
 
 ## Đối chiếu toàn bộ sơ đồ dịch vụ cũ của Bài 02
 
-Đối chiếu tài liệu chính thức ngày 2026-11-02; hoàn tất kiểm tra local ngày 2026-11-03. “Đã có code” khác “đã có xác nhận cloud”. Các sản phẩm ngoài Android không được coi là xong chỉ bằng dependency.
+Đối chiếu tài liệu chính thức ngày 2026-11-02; kết nối Firebase thật và kiểm tra trên emulator ngày 2026-11-03. “Đã có code” khác “đã có xác nhận cloud”. Các sản phẩm ngoài Android không được coi là xong chỉ bằng dependency.
 
 | Mục đề bài | Tình trạng và nguồn chính thức | Áp dụng / code hoặc cấu hình | Kiểm chứng | Phần chủ tài khoản cần làm |
 |---|---|---|---|---|
-| Realtime Database | Đang hỗ trợ; [Android read/write](https://firebase.google.com/docs/database/android/read-and-write), [rules](https://firebase.google.com/docs/database/security) | CRUD, completion, listener và tiến độ thật trong FirebaseTaskRepository; rules theo UID | Unit codec/state, Emulator rules; runtime hai tài khoản và lỗi mạng/rules theo báo cáo | Cung cấp URL instance thật, tạo DB nếu thiếu, deploy rules; CHƯA xác nhận production |
-| Authentication | Đang hỗ trợ; [Google + Credential Manager](https://firebase.google.com/docs/auth/android/google-signin) | Dùng chung AuthRepository/AuthViewModel cho hai bài; restore, sign-out, fallback hồ sơ | Unit success/cancel/busy/restore/logout; runtime theo báo cáo | Google provider, support email, SHA của chứng thư và config đúng môi trường |
-| Cloud Messaging | FCM hiện hành; [Android setup](https://firebase.google.com/docs/cloud-messaging/android/get-started), [receive](https://firebase.google.com/docs/cloud-messaging/android/receive-messages) | FCM 26: register/onRegistered bằng FID, callback token legacy, đăng ký UID, service nhận data, channel, tap task | Đăng ký token không đồng nghĩa delivery; inbox chỉ ghi callback FCM thật | Console hoặc sender HTTP v1/Admin SDK; không có server key/service account trong app |
-| Storage | Cloud Storage đang hỗ trợ; [upload](https://firebase.google.com/docs/storage/android/upload-files), [billing](https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024) | Upload avatar có progress/error, đọc bytes qua SDK, MIME/5 MiB, owner rules | Emulator hai UID/MIME/size; upload production theo báo cáo | Bucket, rules, quyền và Blaze hiện có; không tự bật billing |
+| Realtime Database | Đang hỗ trợ; [Android read/write](https://firebase.google.com/docs/database/android/read-and-write), [rules](https://firebase.google.com/docs/database/security) | CRUD, completion, listener và tiến độ thật trong FirebaseTaskRepository; rules theo UID | **Đã chạy thật** trên emulator: thêm/sửa/hoàn thành/xóa, server phản ánh đúng; rules Emulator 5/5; anonymous bị 401 | Hai tài khoản Google thật CHƯA KIỂM CHỨNG (rules Emulator đã chặn UID khác) |
+| Authentication | Đang hỗ trợ; [Google + Credential Manager](https://firebase.google.com/docs/auth/android/google-signin) | Dùng chung AuthRepository/AuthViewModel cho hai bài; restore, sign-out, fallback hồ sơ | **Đã chạy thật**: hủy, đăng nhập thành công, khôi phục phiên, đăng xuất + Back; unit test | Thêm SHA release khi phát hành |
+| Cloud Messaging | FCM hiện hành; [Android setup](https://firebase.google.com/docs/cloud-messaging/android/get-started), [receive](https://firebase.google.com/docs/cloud-messaging/android/receive-messages) | FCM 26: register/onRegistered bằng FID, callback token legacy, đăng ký UID, service nhận data, channel, tap task | **Đã chạy thật**: FID lưu theo UID, tin HTTP v1 gửi tới `fid` được nhận, hiện thông báo, nhấn mở đúng task; gỡ đăng ký khi đăng xuất | Backend gửi tự động/lịch nhắc chưa có; không có server key/service account trong app |
+| Storage | Cloud Storage đang hỗ trợ; [upload](https://firebase.google.com/docs/storage/android/upload-files), [billing](https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024) | Upload avatar có progress/error, đọc bytes qua SDK, MIME/5 MiB, owner rules | Rules Emulator hai UID/MIME/size; upload thật **CHƯA KIỂM CHỨNG** vì bucket chưa tồn tại (404) | Nâng Blaze, tạo bucket, deploy storage rules |
 | Hosting | Hosting cho web, không phải Android SDK; [quickstart](https://firebase.google.com/docs/hosting/quickstart) | Trang giới thiệu/quyền riêng tư ở hosting/index.html, firebase.json public dir | Có file; CHƯA deploy, CHƯA có URL Hosting được xác minh | Chọn site/project và chủ động deploy khi được phép; không coi file là dịch vụ đã chạy |
-| Remote Config | Đang hỗ trợ; [Android](https://firebase.google.com/docs/remote-config/android/get-started) | Default 4, fetchAndActivate, clamp home_task_limit, hiển thị trạng thái | Đổi parameter trên Console rồi fetch; phân biệt activated/không đổi/error | Publish template/parameter; kết quả production theo báo cáo |
+| Remote Config | Đang hỗ trợ; [Android](https://firebase.google.com/docs/remote-config/android/get-started) | Default 4, fetchAndActivate, clamp home_task_limit, hiển thị trạng thái | Template đã publish (v1); app fetch thành công trên emulator | Đổi giá trị trên Console để thử kích hoạt giá trị mới |
 | Test Lab | Đã deprecated, dự kiến đóng 2027-09-30; [migration sang Developer Device Platform](https://firebase.google.com/docs/test-lab/migrate) | test-lab.example.yaml chuẩn bị Robo test APK; DDP là sản phẩm thay thế riêng | CHƯA submit cloud test; kiểm tra quota và chọn device ID thật trước chạy | Quyền project, quota/billing, chọn thiết bị/API; không tự chạy dịch vụ có phí |
-| Crash Reporting | Sản phẩm cũ đã ngừng 2018-09-09; [thông báo Firebase](https://firebase.googleblog.com/2018/03/firebase-crashlytics-graduates-from-beta.html). Thay bằng **Crashlytics**, không gọi là SDK cũ | Crashlytics SDK + plugin, controls riêng debug; [setup hiện hành](https://firebase.google.com/docs/crashlytics/android/get-started) | Gây crash debug có xác nhận, mở lại rồi xem Console; báo cáo runtime ghi riêng | Bật Crashlytics, kiểm tra báo cáo nhận thực tế |
-| Analytics | Google Analytics for Firebase hiện hành; [get started](https://firebase.google.com/docs/analytics/get-started) | Telemetry event sau hành động thật, không gửi PII | DebugView xác nhận login/screen/task; unit không chứng minh Console nhận | Liên kết GA property, bật DebugView cho thiết bị test |
-| Notifications | Notifications Composer hiện thuộc FCM; [gửi từ Console](https://firebase.google.com/docs/cloud-messaging/send/firebase-console) | Cùng pipeline FCM + quyền Android 13+, channel và tap route, không thêm SDK “Notifications” riêng | Foreground/background/tap; không dùng local notification để tuyên bố FCM pass | Soạn test message đúng UID/token; lịch nhắc/tổng kết cần backend chưa có |
+| Crash Reporting | Sản phẩm cũ đã ngừng 2018-09-09; [thông báo Firebase](https://firebase.googleblog.com/2018/03/firebase-crashlytics-graduates-from-beta.html). Thay bằng **Crashlytics**, không gọi là SDK cũ | Crashlytics SDK + plugin, controls riêng debug; [setup hiện hành](https://firebase.google.com/docs/crashlytics/android/get-started) | Non-fatal debug được ghi và gửi (log “report successfully enqueued”); hiển thị trên Console CHƯA KIỂM CHỨNG | Mở Crashlytics trên Console để xác nhận |
+| Analytics | Google Analytics for Firebase hiện hành; [get started](https://firebase.google.com/docs/analytics/get-started) | Telemetry event sau hành động thật, không gửi PII | Debug mode trên emulator: `screen_view`, `task_complete(category)` được ghi và upload; không có tên/email/UID | DebugView trên Console CHƯA KIỂM CHỨNG |
+| Notifications | Notifications Composer hiện thuộc FCM; [gửi từ Console](https://firebase.google.com/docs/cloud-messaging/send/firebase-console) | Cùng pipeline FCM + quyền Android 13+, channel và tap route, không thêm SDK “Notifications” riêng | Quyền POST_NOTIFICATIONS cấp trên API 36; tin FCM thật hiển thị và tap mở task; không dùng local notification | Lịch nhắc/tổng kết cần backend chưa có |
 | App Indexing | Không còn là cách khuyến nghị cho Google Search; [Firebase FAQ](https://firebase.google.com/support/faq#app-indexing) đề xuất Android App Links/AppSearch | Không đưa task riêng tư lên Search; tìm kiếm task trong app. App Links là phương án khác, chưa khai báo host không sở hữu | CHƯA triển khai verified App Links | Nếu cần: domain sở hữu, HTTPS, assetlinks.json với SHA-256 thật, Digital Asset Links và kiểm tra quyền task |
 | Dynamic Links | Đã ngừng ngày 2025-08-25; [FAQ](https://firebase.google.com/support/dynamic-links-faq) | Không thêm SDK/link page.link. Tap FCM dùng intent nội bộ; App Links có thể dùng khi có domain, không cung cấp deferred deep link tương đương | Không tuyên bố đã chạy Dynamic Links | Chọn giải pháp deep link phù hợp nếu cần chia sẻ web/install; chưa có domain và chưa deploy |
 | Invites | SDK cũ deprecated/removed; [Android release notes](https://firebase.google.com/support/release-notes/android), [Apple removal notes](https://firebase.google.com/support/release-notes/ios) | Không dùng Firebase Invites hoặc gợi ý Dynamic Links đã ngừng. Có thể dùng Android Sharesheet để chia sẻ URL trang giới thiệu sau khi có URL thật; chưa triển khai referral backend | CHƯA kiểm chứng referral/invite; không xem Sharesheet là Firebase Invites | Quyết định domain/link, quy trình mời và kiểm soát truy cập; không chia sẻ task riêng tư công khai |
 | AdWords | Tên hiện hành là **Google Ads**; [Firebase integration](https://firebase.google.com/docs/ads) | Analytics có sự kiện phù hợp để chọn conversion; không có Android AdWords SDK cần thêm | CHƯA link tài khoản, import conversion hoặc chạy campaign | Chủ project và admin Ads liên kết tài khoản, xét conversion/ngân sách; agent không bật chiến dịch |
-| AdMob | Đang hỗ trợ; GMA Legacy 25.5.0 còn có hướng dẫn, có đường chuyển Next-Gen; [setup](https://developers.google.com/admob/android/quick-start), [test ads](https://developers.google.com/admob/android/test-ads) | Trang demo riêng với sample app/banner ID chính thức, lifecycle destroy AdView, báo load/error | Banner test hiện nhãn test; kết quả runtime theo báo cáo | Chưa dùng ad unit production; phát hành cần tài khoản/consent/policy phù hợp |
+| AdMob | Đang hỗ trợ; GMA Legacy 25.5.0 còn có hướng dẫn, có đường chuyển Next-Gen; [setup](https://developers.google.com/admob/android/quick-start), [test ads](https://developers.google.com/admob/android/test-ads) | Trang demo riêng với sample app/banner ID chính thức, lifecycle destroy AdView, báo load/error | **Đã chạy**: banner thử nghiệm tải được, có nhãn “Test Ad” | Chưa dùng ad unit production; phát hành cần tài khoản/consent/policy phù hợp |
 
 ## Dependencies và kiểm thử
 
