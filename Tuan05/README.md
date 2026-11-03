@@ -88,11 +88,11 @@ File `app/google-services.json` đúng package, project `uthsmarttasks-week5`, c
 
 | Hạng mục | Trạng thái |
 |---|---|
-| Realtime Database | Đang hỗ trợ; [Android read/write](https://firebase.google.com/docs/database/android/read-and-write), [rules](https://firebase.google.com/docs/database/security) | CRUD, completion, listener và tiến độ thật trong FirebaseTaskRepository; rules theo UID | **Đã chạy thật** trên emulator: thêm/sửa/hoàn thành/xóa, server phản ánh đúng; rules Emulator 5/5; anonymous bị 401 | Hai tài khoản Google thật CHƯA KIỂM CHỨNG (rules Emulator đã chặn UID khác) |
+| Realtime Database | Đã tạo instance mặc định `uthsmarttasks-week5-default-rtdb` ở `asia-southeast1`; URL đặt trong [firebase_config.xml](./Tuan05_Project/app/src/main/res/values/firebase_config.xml) (`todo_database_url`) |
 | Database rules | Đã deploy [database.rules.json](./firebase/database.rules.json) (`firebase deploy --only database`). Đọc REST không xác thực trả **401 Permission denied** |
-| Remote Config | Đang hỗ trợ; [Android](https://firebase.google.com/docs/remote-config/android/get-started) | Default 4, fetchAndActivate, clamp home_task_limit, hiển thị trạng thái | Template đã publish (v1); app fetch thành công trên emulator | Đổi giá trị trên Console để thử kích hoạt giá trị mới |
-| Storage | Cloud Storage đang hỗ trợ; [upload](https://firebase.google.com/docs/storage/android/upload-files), [billing](https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024) | Upload avatar có progress/error, đọc bytes qua SDK, MIME/5 MiB, owner rules | Rules Emulator hai UID/MIME/size; upload thật **CHƯA KIỂM CHỨNG** vì bucket chưa tồn tại (404) | Nâng Blaze, tạo bucket, deploy storage rules |
-| Authentication | Đang hỗ trợ; [Google + Credential Manager](https://firebase.google.com/docs/auth/android/google-signin) | Dùng chung AuthRepository/AuthViewModel cho hai bài; restore, sign-out, fallback hồ sơ | **Đã chạy thật**: hủy, đăng nhập thành công, khôi phục phiên, đăng xuất + Back; unit test | Thêm SHA release khi phát hành |
+| Remote Config | Đã publish [remoteconfig.template.json](./firebase/remoteconfig.template.json), phiên bản 1, `home_task_limit = 4`. App giới hạn 1..10 |
+| Storage | **Chưa có bucket**: `uthsmarttasks-week5.firebasestorage.app` trả 404. [Cloud Storage cần gói Blaze](https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024); agent không bật thanh toán, nên upload ảnh hồ sơ sẽ báo lỗi cho tới khi chủ project tạo bucket |
+| Authentication | Google provider hoạt động: đăng nhập thật trên emulator thành công |
 
 Việc còn lại cho chủ project:
 
