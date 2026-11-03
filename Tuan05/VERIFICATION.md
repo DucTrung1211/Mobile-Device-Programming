@@ -1,86 +1,96 @@
 # Kiểm chứng Tuần 05
 
-Thực hiện 2026-11-02 đến 2026-11-03 (Asia/Saigon). Báo cáo này phân biệt code, unit/emulator test, preview và dịch vụ cloud thực tế.
+Thực hiện ngày 2026-11-03 (Asia/Saigon) trên nhánh `claude/tuan05-firebase`, tách từ `main` tại `d370d70`. Báo cáo phân biệt rõ ba mức: chỉ có code, đã qua unit/emulator test, và đã chạy với Firebase thật.
 
 ## Khảo sát và phạm vi
 
-- Git root: repository Mobile-Device-Programming, project mở đúng `Tuan05/Tuan05_Project`, package `com.example.tuan05project`.
-- Điểm bắt đầu: `main` tại `ac7eae9`; `origin/main` cùng commit khi fetch ban đầu. Làm việc trên `codex/tuan05-firebase`.
-- Remote đã xác minh: `https://github.com/DucTrung1211/Mobile-Device-Programming.git`.
-- Không tìm thấy AGENTS.md áp dụng tại các thư mục cha hoặc bên trong repository/project bằng công cụ IDE. Không có quy định nơi lưu báo cáo riêng; chỉ dùng file này.
-- Tuần 02 và Tuần 04 có nhiều thay đổi của chủ repository, gồm một deletion đã stage ở Tuần 04. Giữ nguyên chúng; commit nhiệm vụ phải giới hạn README root và Tuần 05.
-- Không thay Git identity, applicationId, AGP/Kotlin hiện có hoặc config Firebase thật. Không triển khai cloud, bật billing, chạy quảng cáo trả phí, Test Lab/DDP hay Hosting.
+- Git root `LapTrinhThietBiDiDong`, remote `https://github.com/DucTrung1211/Mobile-Device-Programming.git`, project `Tuan05/Tuan05_Project`, package `com.example.tuan05project`.
+- Không có AGENTS.md trong repository hoặc thư mục cha. Báo cáo kiểm chứng chỉ nằm ở file này.
+- Tuần 02/04 có thay đổi chưa commit của chủ repository; đã giữ nguyên, commit chỉ gồm README root (nếu đổi) và `Tuan05/`.
+- Không đổi AGP/Kotlin/applicationId, không bật thanh toán, không deploy Hosting, không chạy Test Lab/quảng cáo trả phí.
+
+## Thay đổi trong lần này
+
+| Thay đổi | Lý do |
+|---|---|
+| `navigation/SessionGate.kt`: enum `Lesson`, đích `RESTORING` | Bỏ số bài 0..3; không nháy màn đăng nhập khi Firebase đang khôi phục phiên |
+| `features/lessons/LessonPickerScreen.kt` + nhãn `‹ Bài 0x` trong mỗi bài | Chọn bài rõ ràng, có đường quay lại danh sách bài |
+| `FirebaseTaskRepository.requireOnline()` lắng nghe `.info/connected` | **Lỗi thật**: `get()` trên `.info/connected` bị server từ chối (“Invalid token in path”) nên mọi thao tác thêm/sửa/xóa đều thất bại |
+| `TokenRegistry.register()/revoke()` chạy trên `Dispatchers.IO`, timeout bằng `withTimeoutOrNull` | **Lỗi thật**: FCM báo “Must not be called on the main application thread” |
+| `AuthViewModel.signOut` coi `TimeoutCancellationException` là dọn dẹp thất bại; xóa credential có timeout 8 s | **Lỗi thật**: `unregister()` quá hạn làm đăng xuất bị hủy giữa chừng, app kẹt ở Hồ sơ với `loading = true` |
+| Log lỗi Firebase (chỉ bản debug, chỉ loại exception và thông điệp SDK) | Chẩn đoán lỗi; không ghi dữ liệu người dùng/token |
+| `firebase_config.xml`: URL instance RTDB thật | Database vừa được tạo |
+| `LessonFlowTest` (7 test) và cập nhật `TaskStateTest` | Kiểm thử luồng mới và các lỗi trên |
+
+## Firebase thật (project `uthsmarttasks-week5`)
+
+Chủ project tự đăng nhập Firebase CLI 15.34.2; agent không nhập mật khẩu.
+
+| Hạng mục | Lệnh / bằng chứng | Kết quả |
+|---|---|---|
+| Realtime Database | Tạo instance mặc định qua Management API (cùng hàm `firebase init database` dùng) | `uthsmarttasks-week5-default-rtdb`, `asia-southeast1`, ACTIVE |
+| Database rules | `firebase deploy --only database` | Deploy complete; GET REST không xác thực → 401 Permission denied |
+| Remote Config | `firebase deploy --only remoteconfig`; `remoteconfig:get` | Phiên bản 1, có `home_task_limit` |
+| Storage | `GET firebasestorage.googleapis.com/v0/b/uthsmarttasks-week5.firebasestorage.app/o` | 404: **bucket chưa tồn tại**, cần Blaze; không tự bật |
+| Hosting / Test Lab / Google Ads | — | Không thực hiện (có thể phát sinh phí hoặc cần quyết định của chủ project) |
 
 ## Build / test
 
-| Kiểm tra | Lệnh / công cụ | Exit / kết quả |
+| Kiểm tra | Lệnh | Kết quả |
 |---|---|---|
-| Baseline trước chỉnh sửa | `.\gradlew.bat :app:assembleDebug` tại Tuan05_Project | 0, BUILD SUCCESSFUL |
-| Lệnh bắt buộc trên mã cuối | `.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug --console=plain` | 0, BUILD SUCCESSFUL |
-| Unit test thực thi | Android Studio Gradle build `:app:testDebugUnitTest :app:assembleDebug :app:compileReleaseKotlin --console=plain` | 9 passed, 0 skipped, 0 failed; build thành công |
-| Source set release | `:app:compileReleaseKotlin` | Thành công; controls gây crash chỉ nằm trong debug |
-| Rules local, schema cuối | `npx -y firebase-tools@latest emulators:exec --project demo-tuan05 --only database,storage "npm test"` tại Tuan05/firebase | 0; 5 nhóm test pass, 0 fail, 0 skipped |
-| IDE Gradle Sync | studio_mcp_gradle_sync | Thành công |
-| Consumers | get_artifact_consumers(:app/main) | Chỉ unitTest/androidTest của app; không có module production khác |
-| Whitespace | `git diff --check -- README.md Tuan05` | 0, không có lỗi whitespace |
-
-Unit tests kiểm tra: chỉ xác nhận Firebase mới cho success; chặn login trùng; cancellation không thành success; lỗi mạng khác lỗi config; restore phiên; cleanup token thất bại vẫn sign-out/clear credential; codec giữ completion; thống kê/filter từ dữ liệu đầu vào; route bảo vệ sau logout; guest tách biệt; thiếu thông tin người dùng; lỗi save giữ editor và đổi UID xóa state cũ. Repository fake chỉ dùng trong unit tests, không có mock Firebase trong luồng app.
-
-Emulator tests thực thi rules thật: chủ UID có CRUD/completion; UID khác và anonymous bị từ chối đọc/ghi/xóa; đọc root users bị từ chối; dữ liệu sai/field thừa bị từ chối; registration FCM theo UID; Storage chặn UID khác/anonymous/MIME không hợp lệ/ảnh vượt 5 MiB và cho phép owner đọc/xóa.
-
-Trong quá trình làm có compilation lỗi ở bước UI chưa nối xong và một lần build bị giới hạn thời gian; đã sửa và chạy lại thành công như bảng trên. Không lấy các lần lỗi làm kết quả cuối.
+| Lệnh bắt buộc | `.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug` tại `Tuan05_Project` | Exit 0, BUILD SUCCESSFUL |
+| Unit test | Kết quả JUnit XML | 16 test (AuthViewModelTest 4, LessonFlowTest 7, TaskStateTest 5), 0 fail, 0 skip |
+| Source set release | `.\gradlew.bat :app:compileReleaseKotlin` | Exit 0; nút gây crash chỉ có trong debug |
+| Rules trên emulator | `npx -y firebase-tools@latest emulators:exec --project demo-tuan05 --only database,storage "npm test"` tại `Tuan05/firebase` | Exit 0; 5/5 pass |
 
 ## Runtime
 
-- AVD thử: `Medium_Phone_API_36.1`, serial `emulator-5554`; ADB liệt kê model `sdk_gphone64_x86_64`.
-- API theo tên AVD là 36.1; `getprop ro.build.version.sdk` không trả kết quả trong thời hạn, nên **API thực tế CHƯA KIỂM CHỨNG**.
-- Đã thử mở AVD thường và cold/headless bằng Android CLI; có xuất hiện trong `adb devices`, nhưng Android CLI start/run và các lệnh ADB shell tới emulator timeout. Chưa xác nhận cài APK/mở Activity thành công.
-- Vì vậy **runtime ứng dụng CHƯA KIỂM CHỨNG**. Không dùng giao diện của thiết bị thật đang phục vụ công việc khác làm bằng chứng kiểm thử.
+Thiết bị: AVD `Medium_Phone_API_36.1` (`emulator-5556`, `sdk_gphone64_x86_64`, API 36, 1080×2400, 420 dpi), có tài khoản Google của chủ project. AVD `Pixel_10_Pro` (API 37) bị kẹt `offline` ở cả boot thường lẫn cold boot nên không dùng.
 
-## Visual
+| Luồng | Kết quả |
+|---|---|
+| Danh sách bài → Bài 01 / Bài 02 / bài cũ, nhãn quay lại | Đạt |
+| Khôi phục phiên khi mở lại app | Đạt: vào thẳng trang chủ với tên/ảnh Google thật |
+| Đăng nhập Google → hủy | Đạt: “Bạn đã hủy đăng nhập Google.”, nút hết trạng thái bận, vẫn ở màn đăng nhập |
+| Đăng nhập Google → thành công | Đạt: chọn tài khoản → `FirebaseAuth` báo người dùng → trang chủ |
+| Trang chủ → avatar → Hồ sơ | Đạt: tên, email, ảnh, “Đã liên kết tài khoản Google” |
+| Xoay ngang tại Hồ sơ | Đạt: giữ màn Hồ sơ, nội dung cuộn được |
+| Bài 02: thêm → hoàn thành → sửa nhóm → xóa | Đạt: trang chủ 0/1 → 1/1 (100%) → chip “Cuộc sống” và vẫn hoàn thành → 0/0; `database:get` xác nhận dữ liệu trên server |
+| Đăng xuất → Back | Đạt (sau khi sửa lỗi timeout): “Đã đăng xuất.” sau ~3 s; Back về danh sách bài, vào lại bài chỉ thấy màn đăng nhập; Back nữa thoát app |
+| FCM đăng ký | Đạt: FID lưu ở `users/{uid}/deviceRegistrations` (không in giá trị); bị gỡ khi đăng xuất |
+| FCM nhận + nhấn | Đạt: tin data-only gửi qua HTTP v1 tới `fid` (HTTP 200) → hộp thư trong app ghi nhận, thông báo hiện trên kênh `todo_updates`, nhấn mở “Sửa công việc” đúng task |
+| Quyền thông báo Android 13+ | Đạt: hộp thoại hệ thống → “Quyền thông báo đang bật.” |
+| Remote Config | Đạt: “Fetch thành công”, giới hạn 4 |
+| Analytics | Đạt ở client (debug mode): `screen_view`, `task_complete(category=study)` được ghi và upload, không có PII. DebugView trên Console CHƯA KIỂM CHỨNG |
+| Crashlytics non-fatal (debug) | Đạt ở client: “Crashlytics report successfully enqueued to DataTransport”. Console CHƯA KIỂM CHỨNG. Không thử crash thật |
+| AdMob | Đạt: banner thử nghiệm tải được, nhãn “Test Ad” |
+| Upload ảnh Storage | CHƯA KIỂM CHỨNG: bucket chưa tồn tại |
+| Hai tài khoản Google | CHƯA KIỂM CHỨNG trên thiết bị (chỉ có 1 tài khoản); phân quyền giữa UID đã kiểm bằng rules Emulator |
+| Lỗi mạng thật (tắt mạng) | CHƯA KIỂM CHỨNG trên thiết bị; có unit test cho lỗi listener và retry |
 
-Đọc riêng design context và screenshot của cả sáu node Figma: 17870:1183, 17870:741, 17870:1235, 17870:878, 17870:1000, 17870:1451.
+Trong lúc test, logcat ghi nhận một lần đăng xuất và một lần chuyển tab Cài đặt mà agent không thao tác; nhiều khả năng do thao tác tay trên cửa sổ emulator cùng lúc. Không tìm thấy đường code nào đăng xuất mà không qua hộp xác nhận.
 
-Đã render và xem bằng Android Studio Compose Preview: LoginPreview, HomePreview, ListPreview, FormPreview, ProfilePreview, SettingsPreview (390 × 844 dp). Đối chiếu màu, card, progress ring, filter/chip, nút +/bottom bar, form, theme selector và biểu tượng hồ sơ; đã chỉnh camera/check/refresh/lock/logout, line height và phần chữ phụ tránh tràn.
+Dữ liệu còn lại sau test: một công việc “Nop bai tap Firebase” của tài khoản chủ project, có thể xóa trong app.
 
-Fixture chỉ ở `app/src/debug/.../preview/TodoPreviews.kt`, không được route trong app và không dùng để xác nhận Firebase thành công. Nội dung tài khoản, ngày và việc trong preview là minh họa; app runtime lấy phiên và dữ liệu thật.
+## Đối chiếu Figma
 
-Giới hạn: đây là **kiểm tra preview**, chưa phải screenshot runtime/pixel-perfect. Be Vietnam Pro được cấu hình qua Downloadable Google Fonts, có system fallback; chưa xác minh tải font thực trên thiết bị. Insets Android và dữ liệu/nhãn trạng thái khác mẫu thiết kế; chưa kiểm thử runtime ở màn hình nhỏ, landscape hay tăng cỡ chữ.
+Đã lấy ảnh 6 node (17870:1183, 741, 1235, 878, 1000, 1451) và so với ảnh chụp runtime:
 
-## Interaction
+- **Đăng nhập, trang chủ, hồ sơ, form thêm mới:** khớp bố cục, màu `#2F5BEA`, card bo góc, vòng tiến độ, chip nhóm, thanh điều hướng có nút +.
+- **Khác biệt có chủ đích:**
+  - Số liệu, tên và ngày lấy từ dữ liệu thật.
+  - Dòng “Dùng trên điện thoại và máy tính bảng” thay cho “iPhone, iPad và Mac”.
+  - Hồ sơ hiển thị “Việc đã xong / Đang chờ / Hoàn thành” thay cho “Chuỗi liên tiếp / Đúng hạn”, vì app không có dữ liệu thật cho hai chỉ số này.
+  - Có thêm nhãn `‹ Bài 0x` nhỏ phía trên trang chủ.
+- Chưa so pixel-perfect; chưa thử tăng cỡ chữ hệ thống.
 
-| Luồng | Đã kiểm tra | Chưa kiểm chứng |
-|---|---|---|
-| Mở riêng Bài 01, Bài 02 và bài cũ | Route/code review; unit gate | Nhấn menu trên thiết bị |
-| Google lỗi/hủy/thành công | Unit state/error/duplicate guard | Chooser thật, Google token và Firebase login thật |
-| Trang chủ → hồ sơ → đăng xuất → Back | Unit gate/logout; code review callbacks | Chuỗi thao tác runtime |
-| Restore / xoay màn hình | Auth flow unit; ViewModel + primitive rememberSaveable form | Process restart, rotation trên thiết bị |
-| CRUD/completion/thống kê | Codec/state unit; rules Emulator CRUD | Android client ↔ DB production, lỗi mạng production |
-| Hai tài khoản | Rules Emulator deny/allow; state reset khi đổi UID | Hai Google accounts thật |
-| Upload | Rules Emulator owner/MIME/size; code review progress/error/cancel | Upload ảnh thật tới bucket production và reload ảnh |
-| Thông báo | Code review FID register/onRegistered, legacy token callback, UID guard, channel, permission, tap route | Quyền Android thực, gửi/nhận FCM foreground/background/killed, tap thật |
-| Analytics / Remote Config / Crashlytics / AdMob | Có code, compile và preview cho khu vực UI liên quan | DebugView, fetch cloud, báo cáo crash trên Console, banner test load trên thiết bị |
+## Tự review
 
-Không dùng notification local để khẳng định đã kiểm chứng FCM. Không tạo crash tự động lúc mở app.
-
-## Firebase / Console
-
-- Firebase CLI 15.34.2 có sẵn; `login:list` trả “No authorized accounts” khi khảo sát.
-- Config client hiện có: project `uthsmarttasks-week5`, package đúng, Android OAuth + Web OAuth; file giữ nguyên.
-- Config chưa chứa Realtime Database URL. Resource `todo_database_url` để trống có chủ đích; app báo thiếu cấu hình thay vì đoán endpoint hoặc hiển thị fake success.
-- Production Authentication, Database, Storage, FCM delivery, Analytics, Remote Config và Crashlytics: **CHƯA KIỂM CHỨNG**.
-- Rules Emulator pass là bằng chứng phân quyền local, không phải bằng chứng rules đã deploy.
-- Cần chủ tài khoản kiểm tra Google provider/SHA-1/SHA-256, URL DB, deploy rules, bucket/billing hiện có, Analytics/Crashlytics và parameter Remote Config. FCM còn cần Console/sender tin cậy, ràng buộc UID và backend lập lịch nếu muốn nhắc tự động.
-- Hosting/Test Lab/DDP/Google Ads: chỉ chuẩn bị tài liệu/cấu hình, chưa thực thi; các sản phẩm cũ được giải thích trong bảng 15 mục của README.
-
-## Self-review
-
-- UI và Firebase tách trách nhiệm; state bất biến/StateFlow; listener được tháo khi hủy collection hoặc đổi UID; thao tác write/upload bị chặn lặp.
-- Không giữ dữ liệu UID trước khi đổi phiên; root không render state của người khác khi chờ bind. Back không vượt qua session gate.
-- Sign-out vẫn clear Credential Manager nếu cleanup FCM lỗi; unregister và tắt auto-init khi thoát. Backend phải tiếp tục xóa registration hết hạn, xử lý UID và retry/quota.
-- Upload ảnh riêng tư bằng Storage SDK, không chia sẻ bearer download URL. Client/rules giới hạn MIME và 5 MiB.
-- Analytics custom events không nhận email, tên, UID, token hoặc nội dung công việc; chỉ log sau hành động thật được xác nhận.
-- RTDB local write có thể phát event trước server acknowledgement. UI chỉ báo lưu thành công sau await; nếu timeout thì nhắc kiểm tra dữ liệu sau khi kết nối lại vì write có thể còn chờ SDK. Chưa triển khai hàng đợi đồng bộ có trạng thái pending riêng.
-- Tùy chọn giao diện cục bộ giữ qua xoay màn hình trong ViewModel, chưa persist qua process death. Không trình bày cài đặt nhắc/tổng kết như đã có scheduler.
-- Chỉ dùng sample AdMob IDs chính thức; không có service account/private key/token được đưa vào app/source; public certificates trong font_certs.xml là chứng thư provider Google Fonts, không phải secret.
-- Vẫn cần kiểm tra runtime/cloud và font thực trước khi khẳng định hoàn thành tích hợp đầu cuối.
+- **Kiến trúc:** UI chỉ nhận state bất biến (StateFlow) và gọi callback; mọi thao tác Firebase đi qua repository.
+- **Ghi dữ liệu và upload:** chặn bấm lặp; listener được gỡ khi đổi UID.
+- **Đăng xuất:** luôn kết thúc phiên Firebase, kể cả khi gỡ FCM hoặc xóa credential bị lỗi hay quá hạn. Trường hợp này có unit test riêng.
+- **Bí mật:** không có server key, service account, mật khẩu hay token trong source. Script gửi FCM thử chỉ nằm ở scratchpad, dùng quyền CLI của chủ project, không được commit.
+- **Giới hạn còn lại:**
+  - Chưa có backend lập lịch nhắc việc hoặc tổng kết.
+  - Thao tác ghi khi mất mạng trả lỗi “mất kết nối” thay vì xếp hàng chờ.
+  - Tùy chọn giao diện chưa được lưu lại sau khi app bị hệ thống đóng.

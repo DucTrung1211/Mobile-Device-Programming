@@ -24,7 +24,10 @@ class ServicesViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             try { mutable.value = ServicesState(TokenRegistry(getApplication()).register())
             } catch (error: CancellationException) { mutable.value = ServicesState("Đăng ký bị gián đoạn."); throw error
-            } catch (_: Exception) { mutable.value = ServicesState("Chưa đăng ký được token. Kiểm tra mạng, Realtime Database URL và rules.") }
+            } catch (error: Exception) {
+                if (com.example.tuan05project.BuildConfig.DEBUG) android.util.Log.w("TodoFcm", "FCM registration failed: ${error.javaClass.name}: ${error.message}")
+                mutable.value = ServicesState("Chưa đăng ký được token. Kiểm tra mạng, Realtime Database URL và rules.")
+            }
         }
     }
     suspend fun revoke() = TokenRegistry(getApplication()).revoke()

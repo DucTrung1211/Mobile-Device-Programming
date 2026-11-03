@@ -12,6 +12,8 @@ data class AuthUser(
 }
 data class AuthUiState(
     val user: AuthUser? = null,
+    /** True until Firebase reports the persisted session, so a signed-in user never sees the login screen flash. */
+    val restoring: Boolean = true,
     val loading: Boolean = false,
     val message: String? = null
 )

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Leave empty until the real Realtime Database instance URL is known. Never guess its region/host. -->
-    <string name="todo_database_url" translatable="false"></string>
+    <!-- Default instance created on 2026-11-03 in asia-southeast1 (listed by `firebase database:instances:list`). -->
+    <string name="todo_database_url" translatable="false">https://uthsmarttasks-week5-default-rtdb.asia-southeast1.firebasedatabase.app</string>
 </resources>
