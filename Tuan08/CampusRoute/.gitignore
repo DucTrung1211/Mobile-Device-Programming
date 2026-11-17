@@ -1,0 +1,27 @@
+# Gradle and Android generated files
+.gradle/
+.kotlin/
+**/build/
+.externalNativeBuild/
+.cxx/
+captures/
+*.apk
+*.aab
+
+# Local configuration, IDE files and signing keys
+local.properties
+.idea/
+*.iml
+*.jks
+*.keystore
+.env
+.env.*
+
+# Reference ebooks are not part of the source distribution
+/references/
+
+# OS and temporary files
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
