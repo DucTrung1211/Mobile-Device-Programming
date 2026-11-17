@@ -23,5 +23,5 @@ Lập trình Thiết bị Di động.
 | Tuần 03 | Jetpack Compose UI và UI Components | [Xem bài Tuần 03](./Tuan03) |
 | Tuần 04 | Navigation, OOP và Data Flow | [Xem bài Tuần 04](./Tuan04) |
 | Tuần 05 | UTH Todo — Bài 01: Firebase Authentication; Bài 02: Tích hợp dịch vụ Firebase | [Xem bài Tuần 05](./Tuan05) |
-| Tuần 06 | Xử lý mạng và gọi API — GET Product API; UTH SmartTasks (UI + API); quyền Android; Crypto (Retrofit + Coroutines) | [UTH SmartTasks](./Tuan06%281%29) · [Quyền Android](./Tuan06%282%29) · [Crypto](./Tuan06%283%29) |
+| Tuần 06 | Xử lý mạng và gọi API — UTH SmartTasks; Quyền Android; Crypto Monitor | [Xem bài Tuần 06](./Tuan06) |
 | Tuần 08 | Báo cáo Elearning | [Xem bài Tuần 08](./Tuan08) |
